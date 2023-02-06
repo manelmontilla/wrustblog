@@ -1,17 +1,12 @@
-use crate::{
-    content,
-    errors::Error,
-    templates::{self, PostTemplateModel},
-    CommandRun,
-};
+use crate::{content, errors::Error, templates, CommandRun};
 use clap::{Args, ValueEnum};
 
 use log::{debug, error, info};
-use simplelog::{self, SimpleLogger, TermLogger};
+use simplelog::{self, TermLogger};
 use std::{
-    fmt, fs,
+    fs,
     io::{self, BufReader, Cursor},
-    path::{self, Component, Path, PathBuf},
+    path::{Path, PathBuf},
     process::{self, exit},
     time::Duration,
 };
@@ -20,7 +15,7 @@ use wruster::{
         headers::{Header, Headers},
         Body, HttpMethod, Request, Response, StatusCode,
     },
-    router::{self, HttpHandler, Router},
+    router::{HttpHandler, Router},
     Server, Timeouts,
 };
 
@@ -32,10 +27,6 @@ const ASSETS_ROUTE: &str = "/assets";
 const POSTS_ROUTE: &str = "/posts";
 const POST_ASSETS_ROUTE: &str = "/posts/post_assets";
 
-const POSTS_CONTENT_ROUTE: &str = "posts";
-const CONTENT_ROUTE: &str = "/content";
-const ROOT_PAGE: &str = "index";
-
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
 pub enum LogLevel {
     Off,
@@ -44,9 +35,9 @@ pub enum LogLevel {
     Debug,
 }
 
-impl Into<simplelog::LevelFilter> for LogLevel {
-    fn into(self) -> simplelog::LevelFilter {
-        match self {
+impl From<LogLevel> for simplelog::LevelFilter {
+    fn from(val: LogLevel) -> Self {
+        match val {
             LogLevel::Off => simplelog::LevelFilter::Off,
             LogLevel::Error => simplelog::LevelFilter::Error,
             LogLevel::Info => simplelog::LevelFilter::Info,
@@ -218,7 +209,7 @@ pub fn serve_post(
         .unwrap_or_default()
         .to_str()
         .unwrap_or_default();
-    match generate_post_content(&templates, &content_dir, post_file) {
+    match generate_post_content(templates, &content_dir, post_file) {
         Ok(content) => {
             let content_len = content.len() as u64;
             let content = Cursor::new(content);
@@ -243,14 +234,14 @@ pub fn serve_main_page(
             Ok(content) => {
                 let content_len = content.len() as u64;
                 let content = Cursor::new(content);
-                return Response::from_content(content, content_len, mime::TEXT_HTML);
+                Response::from_content(content, content_len, mime::TEXT_HTML)
             }
             Err(err) => {
                 error!(
                     "serving content error generating main page content: {}",
                     err
                 );
-                return Response::from_status(StatusCode::InternalServerError);
+                Response::from_status(StatusCode::InternalServerError)
             }
         },
         _ => Response::from_status(StatusCode::NotFound),
@@ -293,7 +284,7 @@ fn generate_post_content(
 
 fn generate_main_page_content(
     templates: &templates::Main,
-    content_dir: &PathBuf,
+    content_dir: &Path,
 ) -> Result<String, Error> {
     let posts_dir = content_dir.join(POST_SUBDIR);
     let posts_dir = posts_dir.to_string_lossy();

@@ -4,7 +4,6 @@ pub enum Error {
     Undefined(String),
     NoFrontMatter(String),
     NoBlogTemplateFound,
-    NoPostsTemplateFound,
 }
 
 impl Error {
@@ -19,7 +18,6 @@ impl Display for Error {
             Error::Undefined(message) => write!(f, "{}", message),
             Error::NoFrontMatter(file) => write!(f, "no front matter in {}", file),
             Error::NoBlogTemplateFound => write!(f, "no main template file found"),
-            Error::NoPostsTemplateFound => write!(f, "no posts template file found"),
         }
     }
 }
