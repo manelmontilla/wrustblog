@@ -29,8 +29,7 @@ struct Cli {
 enum Commands {
     /// Generates a directory with the given blog contents.
     Pack(PackCommand),
-    /// Servers the contents of a blog from markdow content and
-    /// the Ramhorns templates
+    /// Dinamically serves the contents of the blog.
     Serve(ServeCommand),
 }
 
