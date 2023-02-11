@@ -29,7 +29,7 @@ struct Cli {
 enum Commands {
     /// Generates a directory with the given blog contents.
     Pack(PackCommand),
-    /// Dinamically serves the contents of the blog.
+    /// Dynamically serves the contents of the blog.
     Serve(ServeCommand),
 }
 

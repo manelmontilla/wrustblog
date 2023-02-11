@@ -52,7 +52,7 @@ pub(crate) struct ServeCommand {
     templates: String,
     /// Path to a directory containing the blog contents.
     content: String,
-    /// Addres to listen to, for example: localhost:8080
+    /// Address to listen to, for example: localhost:8080
     address: String,
     /// Log level: off, error, info, debug
     #[arg(short, long, value_enum, default_value_t = LogLevel::Info)]
@@ -412,17 +412,17 @@ trait HasAnyExtension
 where
     Self: std::marker::Sized,
 {
-    fn has_any_extension(&self, extentions: Vec<&str>) -> bool;
+    fn has_any_extension(&self, extensions: Vec<&str>) -> bool;
 }
 
 impl HasAnyExtension for PathBuf {
-    fn has_any_extension(&self, extentions: Vec<&str>) -> bool {
-        let extention = match self.extension() {
+    fn has_any_extension(&self, extensions: Vec<&str>) -> bool {
+        let extension = match self.extension() {
             Some(extension) => extension.to_str().unwrap_or(""),
             None => return false,
         };
-        extentions
+        extensions
             .into_iter()
-            .any(|current_extention| current_extention == extention)
+            .any(|current_extension| current_extension == extension)
     }
 }
