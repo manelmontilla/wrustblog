@@ -1034,7 +1034,7 @@ dependencies = [
 [[package]]
 name = "wruster"
 version = "0.1.0"
-source = "git+https://github.com/manelmontilla/wruster/#c5cba3bf964c400ffb9fd3a0d610195199ae69b0"
+source = "git+https://github.com/manelmontilla/wruster.git?tag=v0.0.7#58a8d271212d4e06bbbcabc721252823c7f8fd37"
 dependencies = [
  "atomic_refcell",
  "cfg-if 0.1.10",
