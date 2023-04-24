@@ -1,4 +1,7 @@
-use std::path::{self, PathBuf};
+use std::{
+    cmp::Ordering,
+    path::{self, PathBuf},
+};
 
 use chrono::{self, Datelike, Utc};
 use gray_matter::{engine::YAML, Matter};
@@ -89,7 +92,7 @@ pub struct Post {
     pub year: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Eq, PartialEq)]
 pub struct PostMetadata {
     pub title: String,
     #[serde(deserialize_with = "parse_date_time")]
@@ -101,7 +104,7 @@ pub struct PostMetadata {
     pub file_name: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq, Eq)]
 pub struct Tag(pub String);
 
 fn parse_date_time<'a, D: Deserializer<'a>>(d: D) -> Result<DateTime, D::Error> {
@@ -124,8 +127,20 @@ fn parse_date_time<'a, D: Deserializer<'a>>(d: D) -> Result<DateTime, D::Error> 
     Ok(DateTime(datetime))
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct DateTime(pub chrono::DateTime<Utc>);
+
+impl Ord for DateTime {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.cmp(&other.0)
+    }
+}
+
+impl PartialOrd for DateTime {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.0.partial_cmp(&other.0)
+    }
+}
 
 fn read_post_files(content_path: &str) -> Result<Vec<PostItem>, Error> {
     let posts_dir_path = path::Path::new(&content_path).join("posts");

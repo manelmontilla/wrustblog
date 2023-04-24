@@ -292,8 +292,9 @@ fn generate_main_page_content(
     let content_dir = content_dir.to_string_lossy();
 
     let blog_content = content::read_blog_file(&content_dir)?;
-    let posts_metadata = content::read_posts_metadata(&posts_dir)?;
-
+    let mut posts_metadata = content::read_posts_metadata(&posts_dir)?;
+    // Sort the blog posts by date.
+    posts_metadata.sort_by(|a, b| b.date.cmp(&a.date));
     let posts_template_models = posts_metadata
         .into_iter()
         .map(|metadata| {
