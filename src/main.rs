@@ -1,5 +1,4 @@
 use clap::{Parser, Subcommand};
-
 mod content;
 mod errors;
 mod pack;

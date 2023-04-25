@@ -1,12 +1,13 @@
+use chrono::{self, Datelike, Utc};
+use gray_matter::{engine::YAML, Matter};
+use lazy_static::lazy_static;
+use pulldown_cmark::{html, CowStr, Event, Options, Parser as MDParser};
+use regex::Regex;
+use serde::{self, Deserialize, Deserializer};
 use std::{
     cmp::Ordering,
     path::{self, PathBuf},
 };
-
-use chrono::{self, Datelike, Utc};
-use gray_matter::{engine::YAML, Matter};
-use pulldown_cmark::{html, CowStr, Event, Options, Parser as MDParser};
-use serde::{self, Deserialize, Deserializer};
 
 use crate::errors::Error;
 
@@ -53,7 +54,7 @@ pub(crate) fn read_blog_file(dir: &str) -> Result<Blog, Error> {
     let mut options = Options::empty();
     options.insert(Options::ENABLE_STRIKETHROUGH);
     let parser = MDParser::new_ext(&content, options);
-    let parser = process_markdown_images(parser);
+    let parser = process_markdown(parser);
     let mut html_output = String::new();
     html::push_html(&mut html_output, parser);
     let matter = Matter::<YAML>::new();
@@ -225,7 +226,7 @@ pub(crate) fn read_post_file(post_path: &str) -> Result<Post, Error> {
     let mut options = Options::empty();
     options.insert(Options::ENABLE_STRIKETHROUGH);
     let parser = MDParser::new_ext(&content, options);
-    let parser = process_markdown_images(parser);
+    let parser = process_markdown(parser);
     let mut html_output = String::new();
     html::push_html(&mut html_output, parser);
 
@@ -250,10 +251,36 @@ pub(crate) fn read_post_file(post_path: &str) -> Result<Post, Error> {
     Ok(post)
 }
 
-fn process_markdown_images<'a>(
-    parser: MDParser<'a, 'a>,
-) -> Box<dyn Iterator<Item = Event<'a>> + 'a> {
-    let parser = parser.map(|event| match &event {
+fn process_markdown<'a>(parser: MDParser<'a, 'a>) -> Box<dyn Iterator<Item = Event<'a>> + 'a> {
+    let mut heading_text: Option<String> = None;
+    // We modify the stream of events of the parser so:
+    // 1. We generate heading by ourselves so we can add anchors to them.
+    // 2. Add the "post_assets" directory to the path of the images.
+    // TODO: Find a way for adding the anchors to the headings without having
+    // to directly generate the HTML for them.
+    let parser = parser.map(move |event| match &event {
+        Event::Start(pulldown_cmark::Tag::Heading(_, _, _)) => {
+            heading_text = Some(String::from(""));
+            // This is a quite dirty workaround for removing the heading event
+            // from the stream.
+            Event::Text(CowStr::from(""))
+        }
+        Event::Text(text) if heading_text.is_some() => {
+            let current_text = heading_text.as_mut().unwrap();
+            current_text.push_str(text);
+            // This is a quite dirty workaround for removing the text event
+            // from the stream.
+            Event::Text(CowStr::from(""))
+        }
+        Event::End(pulldown_cmark::Tag::Heading(level, _, _)) => {
+            let text = heading_text.as_ref().unwrap().clone();
+            let identifier_text = heading_anchor(&text);
+            heading_text = None;
+            Event::Html(CowStr::from(format!(
+                "<{} id=\"{}\">{}</{}>",
+                level, identifier_text, text, level
+            )))
+        }
         Event::Start(pulldown_cmark::Tag::Image(link_type, url, title)) => {
             let url = format!("post_assets/{}", url);
             let tag = pulldown_cmark::Tag::Image(*link_type, CowStr::from(url), title.clone());
@@ -262,6 +289,17 @@ fn process_markdown_images<'a>(
         _ => event,
     });
     Box::new(parser)
+}
+
+fn heading_anchor(text: &str) -> String {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"[\w\- ]").unwrap();
+    }
+    RE.find_iter(text)
+        .map(|m| m.as_str())
+        .collect::<String>()
+        .to_ascii_lowercase()
+        .replace(' ', "-")
 }
 
 fn split_content(content: &str) -> (String, String) {
