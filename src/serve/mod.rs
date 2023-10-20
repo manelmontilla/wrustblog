@@ -99,7 +99,6 @@ impl CommandRun for ServeCommand {
             });
 
         // Build the router.
-        //let router = build_router(templates_assets_path, content_path, blog_templates);
         let router = build_simple_router(templates_assets_path, content_path, blog_templates);
         // Start the web server.
         let timeouts = Timeouts {
@@ -132,8 +131,7 @@ fn build_simple_router(
     );
     let (main_template, post_template) = blog_templates.parts();
 
-    // /
-    // index
+    // index route: /
     let main_handler_content_dir = content_dir.clone();
     let main_handler = move |request: &mut Request| -> Response {
         serve_main_page(main_handler_content_dir.clone(), request, &main_template)
@@ -141,7 +139,7 @@ fn build_simple_router(
     let main_handler: HttpHandler = Box::new(main_handler);
     router.add("/", HttpMethod::GET, main_handler);
 
-    // assets/.+
+    // commmon assets route: assets/*
     let assets_handler = move |request: &mut Request| -> Response {
         serve_static(
             ASSETS_ROUTE.into(),
@@ -153,7 +151,7 @@ fn build_simple_router(
     let assets_handler: HttpHandler = Box::new(assets_handler);
     router.add(ASSETS_ROUTE, HttpMethod::GET, assets_handler);
 
-    // posts/post_article
+    // post article route: /posts/article.md
     let post_handler_content_dir = content_dir.clone();
     let posts_handler = move |request: &mut Request| -> Response {
         serve_post(post_handler_content_dir.clone(), request, &post_template)
@@ -161,7 +159,7 @@ fn build_simple_router(
     let posts_handler: HttpHandler = middleware::log(Box::new(posts_handler));
     router.add(POSTS_ROUTE, HttpMethod::GET, posts_handler);
 
-    // post assets route /posts/post_assets
+    // post assets route: /posts/article_asset
     let post_asssets_dir = content_dir.join(POST_SUBDIR);
     let posts_assets_handler = move |request: &mut Request| -> Response {
         serve_static(
