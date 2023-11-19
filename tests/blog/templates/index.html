@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<title>{{title}}</title>
+</head>
+
+<body>
+    {{#twiter}}
+    {{/twiter}}
+    {{^twiter}}{{/twiter}}
+    {{{home_content}}}
+    author: {{author}}
+    {{#posts}}
+    <article>
+        <a href="{{file_name}}">{{title}}</a>
+        <p>Summary: {{summary}}</p>
+        <div>Date: {{date}}</div>
+        <ul>
+            Tags:
+            {{#tags}}
+            <li>{{0}}</li>
+            {{/tags}}
+        </ul>
+        {{/posts}}
+        {{^posts}}<p>No post found</p>{{/posts}}
+        {{>footer.html}}
+</body>
+
+</html>
