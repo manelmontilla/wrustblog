@@ -1377,7 +1377,7 @@ checksum = "ed94fce61571a4006852b7389a063ab983c02eb1bb37b47f8272ce92d06d9538"
 
 [[package]]
 name = "wrustblog"
-version = "0.0.10"
+version = "0.0.11"
 dependencies = [
  "assert_cmd",
  "chrono",
@@ -1400,8 +1400,8 @@ dependencies = [
 
 [[package]]
 name = "wruster"
-version = "0.0.9"
-source = "git+https://github.com/manelmontilla/wruster.git?tag=0.0.9#a332b83b8150ff6d692fe339821bf669efde0f1a"
+version = "0.0.10"
+source = "git+https://github.com/manelmontilla/wruster.git?tag=0.0.10#89ecca75e0d57793c0c92f56241ce45c72acadf1"
 dependencies = [
  "atomic_refcell",
  "cfg-if 0.1.10",
