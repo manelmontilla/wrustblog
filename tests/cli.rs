@@ -1,9 +1,7 @@
 use assert_cmd::prelude::*;
-use std::io::{self, stdout, BufRead, BufReader, Read};
-use std::os::fd::AsFd;
+use std::io::{BufRead, BufReader, Read};
 use std::path::PathBuf;
-use std::process::{Child, ChildStdout, Command, Stdio};
-use std::time::Duration;
+use std::process::{Child, Command, Stdio};
 use std::{fs, thread};
 
 use ureq;
